@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "TodoTxt",
-    platforms: [.macOS(.v11)],
+    platforms: [.macOS(.v14)],
     products: [
         .executable(name: "TodoTxt", targets: ["TodoTxt"])
     ],
