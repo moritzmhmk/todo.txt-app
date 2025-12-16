@@ -9,6 +9,8 @@ let package = Package(
         .executable(name: "TodoTxt", targets: ["TodoTxt"])
     ],
     targets: [
-        .executableTarget(name: "TodoTxt")
+        .target(name: "TodoParser"),
+        .executableTarget(name: "TodoTxt", dependencies: ["TodoParser"]),
+        .testTarget(name: "TodoParserTests", dependencies: ["TodoParser"]),
     ]
 )
