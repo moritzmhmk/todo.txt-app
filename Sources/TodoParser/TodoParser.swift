@@ -41,8 +41,28 @@ struct TodoParser {
         }
 
         // Step 4: remaining words are tokens
-        // TODO handle tags (@context, +project, key:value)
-        item.tokens = words.map { Token.word($0) }
+        item.tokens = words.map { word in
+            if word.hasPrefix("@"), word.count > 1 {
+                return .context(String(word.dropFirst()))
+            }
+
+            if word.hasPrefix("+"), word.count > 1 {
+                return .project(String(word.dropFirst()))
+            }
+
+            let parts = word.split(separator: ":", omittingEmptySubsequences: false)
+            if parts.count == 2,
+                !parts[0].isEmpty,
+                !parts[1].isEmpty
+            {
+                return .keyValue(
+                    key: String(parts[0]),
+                    value: String(parts[1])
+                )
+            }
+
+            return .word(word)
+        }
 
         return item
     }

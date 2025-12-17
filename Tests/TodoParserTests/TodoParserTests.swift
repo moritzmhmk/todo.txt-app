@@ -156,4 +156,152 @@ final class TodoParserTests: XCTestCase {
         XCTAssertEqual(item.tokens.map { $0.description }, ["Pack", "towel"])
     }
 
+    func testContext() {
+        let line = "Pack towel @Home"
+        let item = TodoParser.parse(line: line)
+
+        XCTAssertFalse(item.completed)
+        XCTAssertNil(item.priority)
+        XCTAssertNil(item.completionDate)
+        XCTAssertNil(item.creationDate)
+        XCTAssertEqual(
+            item.tokens,
+            [
+                .word("Pack"),
+                .word("towel"),
+                .context("Home"),
+            ]
+        )
+    }
+
+    func testMultipleContexts() {
+        let line = "@Earth Pack towel @Home"
+        let item = TodoParser.parse(line: line)
+
+        XCTAssertFalse(item.completed)
+        XCTAssertNil(item.priority)
+        XCTAssertNil(item.completionDate)
+        XCTAssertNil(item.creationDate)
+        XCTAssertEqual(
+            item.tokens,
+            [
+                .context("Earth"),
+                .word("Pack"),
+                .word("towel"),
+                .context("Home"),
+            ]
+        )
+    }
+
+    func testInvalidContexts() {
+        let line = "Pack towel @ E@rth"
+        let item = TodoParser.parse(line: line)
+
+        XCTAssertFalse(item.completed)
+        XCTAssertNil(item.priority)
+        XCTAssertNil(item.completionDate)
+        XCTAssertNil(item.creationDate)
+        XCTAssertEqual(
+            item.tokens,
+            [
+                .word("Pack"),
+                .word("towel"),
+                .word("@"),
+                .word("E@rth"),
+            ]
+        )
+    }
+
+    func testProject() {
+        let line = "Pack towel +travel"
+        let item = TodoParser.parse(line: line)
+
+        XCTAssertFalse(item.completed)
+        XCTAssertNil(item.priority)
+        XCTAssertNil(item.completionDate)
+        XCTAssertNil(item.creationDate)
+        XCTAssertEqual(
+            item.tokens,
+            [
+                .word("Pack"),
+                .word("towel"),
+                .project("travel"),
+            ]
+        )
+    }
+
+    func testInvalidProjects() {
+        let line = "Pack 2+2 towels"
+        let item = TodoParser.parse(line: line)
+
+        XCTAssertFalse(item.completed)
+        XCTAssertNil(item.priority)
+        XCTAssertNil(item.completionDate)
+        XCTAssertNil(item.creationDate)
+        XCTAssertEqual(
+            item.tokens,
+            [
+                .word("Pack"),
+                .word("2+2"),
+                .word("towels"),
+            ]
+        )
+    }
+
+    func testKeyValueToken() {
+        let line = "Pack towel due:tomorrow"
+        let item = TodoParser.parse(line: line)
+
+        XCTAssertFalse(item.completed)
+        XCTAssertNil(item.priority)
+        XCTAssertNil(item.completionDate)
+        XCTAssertNil(item.creationDate)
+        XCTAssertEqual(
+            item.tokens,
+            [
+                .word("Pack"),
+                .word("towel"),
+                .keyValue(key: "due", value: "tomorrow"),
+            ]
+        )
+    }
+
+    func testInvalidKeyValueTokens() {
+        let line = "Todo: Pack towel :now"
+        let item = TodoParser.parse(line: line)
+
+        XCTAssertFalse(item.completed)
+        XCTAssertNil(item.priority)
+        XCTAssertNil(item.completionDate)
+        XCTAssertNil(item.creationDate)
+        XCTAssertEqual(
+            item.tokens,
+            [
+                .word("Todo:"),
+                .word("Pack"),
+                .word("towel"),
+                .word(":now"),
+            ]
+        )
+    }
+
+    func testAmbigiousTokens() {
+        let line = "Todo: Pack towel :now"
+        let item = TodoParser.parse(line: line)
+
+        XCTAssertFalse(item.completed)
+        XCTAssertNil(item.priority)
+        XCTAssertNil(item.completionDate)
+        XCTAssertNil(item.creationDate)
+        XCTAssertEqual(
+            item.tokens,
+            [
+                .word("Todo:"),
+                .word("Pack"),
+                .word("towel"),
+                .word(":now"),
+            ]
+        )
+    }
+
 }
