@@ -22,7 +22,13 @@ final class TodoFileWatcher {
             queue: queue
         )
 
-        source?.setEventHandler { [onChange] in
+        source?.setEventHandler { [source, onChange] in
+            let event = source?.data ?? []
+            if event.contains(.delete) || event.contains(.rename) {
+                self.stop()
+                self.start()
+            }
+
             Task { @MainActor in
                 onChange()
             }
