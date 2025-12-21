@@ -10,7 +10,8 @@ struct TodoTxtApp: App {
         _appState = StateObject(wrappedValue: state)
         _viewModel = StateObject(
             wrappedValue: TodoListViewModel(
-                initialContents: state.contents
+                initialContents: state.contents,
+                onSave: { state.save(contents: $0) }
             )
         )
     }

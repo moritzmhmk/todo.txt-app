@@ -41,7 +41,10 @@ struct ContentView: View {
         List {
             ForEach(Array(viewModel.items.enumerated()), id: \.offset) { index, item in
                 TodoRowView(
-                    item: item
+                    item: item,
+                    onToggle: {
+                        viewModel.toggleCompleted(at: index)
+                    }
                 )
             }
         }

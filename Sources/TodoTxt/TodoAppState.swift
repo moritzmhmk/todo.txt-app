@@ -42,6 +42,19 @@ final class TodoAppState: ObservableObject {
         contents = (try? String(contentsOf: url)) ?? ""
     }
 
+    // MARK: - Write
+
+    func save(contents newContents: String) {
+        guard let url = todoFileURL else { return }
+
+        do {
+            try newContents.write(to: url, atomically: true, encoding: .utf8)
+            contents = newContents
+        } catch {
+            print("Failed to save todo.txt:", error)
+        }
+    }
+
     // MARK: - File watching
 
     private func startWatching(_ url: URL) {
