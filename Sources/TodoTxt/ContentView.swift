@@ -39,7 +39,9 @@ struct ContentView: View {
 
     private var todoList: some View {
         List {
-            ForEach(Array(viewModel.items.enumerated()), id: \.offset) { index, item in
+            let indexed = Array(viewModel.items.enumerated())
+            let displayed = indexed.sorted { lhs, rhs in lhs.element < rhs.element }
+            ForEach(displayed, id: \.offset) { index, item in
                 TodoRowView(
                     item: item,
                     onToggle: {
