@@ -1,10 +1,10 @@
-enum Token: Equatable, CustomStringConvertible {
+public enum Token: Equatable, CustomStringConvertible {
     case context(String)
     case project(String)
     case keyValue(key: String, value: String)
     case word(String)
 
-    var description: String {
+    public var description: String {
         switch self {
         case .context(let s):
             return "@\(s)"

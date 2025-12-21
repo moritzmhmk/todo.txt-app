@@ -1,9 +1,13 @@
 import Foundation
 
-struct TodoItem {
-    var completed: Bool = false
-    var priority: Character? = nil
-    var completionDate: Date? = nil
-    var creationDate: Date? = nil
-    var tokens: [Token] = []
+public struct TodoItem {
+    public var completed: Bool = false
+    public var priority: Character? = nil
+    public var completionDate: Date? = nil
+    public var creationDate: Date? = nil
+    public var tokens: [Token] = []
+
+    public var description: String {
+        tokens.map(\.description).joined(separator: " ")
+    }
 }

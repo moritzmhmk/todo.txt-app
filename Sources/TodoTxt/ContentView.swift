@@ -1,21 +1,19 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var appState: TodoAppState
+
+    @ObservedObject var appState: TodoAppState
+    @ObservedObject var viewModel: TodoListViewModel
 
     var body: some View {
         Group {
             if appState.todoFileURL != nil {
-                ScrollView {
-                    Text(appState.contents)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding()
-                        .textSelection(.enabled)
-                }
+                todoList
             } else {
                 firstLaunchView
             }
         }
+        .frame(minWidth: 400, minHeight: 300)
     }
 
     private var firstLaunchView: some View {
@@ -35,8 +33,17 @@ struct ContentView: View {
                     appState.createFile()
                 }
             }
-            .keyboardShortcut(.defaultAction)
         }
-        .frame(minWidth: 400, minHeight: 300)
+        .padding()
+    }
+
+    private var todoList: some View {
+        List {
+            ForEach(Array(viewModel.items.enumerated()), id: \.offset) { index, item in
+                TodoRowView(
+                    item: item
+                )
+            }
+        }
     }
 }

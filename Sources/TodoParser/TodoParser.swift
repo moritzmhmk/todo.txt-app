@@ -1,8 +1,8 @@
 import Foundation
 
-struct TodoParser {
+public struct TodoParser {
 
-    static func parse(line: String) -> TodoItem {
+    public static func parse(line: String) -> TodoItem {
         var item = TodoItem()
         var words = line.split(separator: " ").map { String($0) }
 
