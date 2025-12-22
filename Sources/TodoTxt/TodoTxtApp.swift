@@ -5,6 +5,8 @@ struct TodoTxtApp: App {
     @StateObject private var appState: TodoAppState
     @StateObject private var viewModel: TodoListViewModel
 
+    @FocusState private var focusNewItem: Bool
+
     init() {
         let state = TodoAppState()
         _appState = StateObject(wrappedValue: state)
@@ -28,13 +30,21 @@ struct TodoTxtApp: App {
                 Button("New todo.txt…") {
                     appState.createFile()
                 }
-                .keyboardShortcut("n")
 
                 Button("Open todo.txt…") {
                     appState.chooseFile()
                 }
-                .keyboardShortcut("o")
+            }
+            CommandMenu("Todo") {
+                Button("New Task") {
+                    NotificationCenter.default.post(name: .focusNewItem, object: nil)
+                }
+                .keyboardShortcut("n", modifiers: [.command])
             }
         }
     }
+}
+
+extension NSNotification.Name {
+    static let focusNewItem = NSNotification.Name("focusNewItem")
 }

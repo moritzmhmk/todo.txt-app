@@ -6,6 +6,8 @@ struct ContentView: View {
     @ObservedObject var viewModel: TodoListViewModel
 
     @State private var searchText = ""
+    @State private var newItemText = ""
+    @FocusState var focusNewItem: Bool
 
     var body: some View {
         Group {
@@ -40,43 +42,73 @@ struct ContentView: View {
     }
 
     private var todoList: some View {
-        List {
-            // Group items by priority
-            let indexed = Array(viewModel.items.enumerated())
-            let filtered = indexed.filter { _, item in
-                searchText.isEmpty || item.description.localizedCaseInsensitiveContains(searchText)
-            }
-            let grouped = Dictionary(grouping: filtered) { _, item in
-                item.priority ?? "-"  // use "-" for no priority
-            }
+        ScrollViewReader { proxy in
+            List {
+                // Group items by priority
+                let indexed = Array(viewModel.items.enumerated())
+                let filtered = indexed.filter { _, item in
+                    searchText.isEmpty
+                        || item.description.localizedCaseInsensitiveContains(searchText)
+                }
+                let grouped = Dictionary(grouping: filtered) { _, item in
+                    item.priority ?? "-"  // use "-" for no priority
+                }
 
-            let sortedGroups = grouped.keys.sorted { lhs, rhs in
-                if lhs == "-" { return false }  // no priority goes last
-                if rhs == "-" { return true }
-                return lhs < rhs
-            }
+                let sortedGroups = grouped.keys.sorted { lhs, rhs in
+                    if lhs == "-" { return false }  // no priority goes last
+                    if rhs == "-" { return true }
+                    return lhs < rhs
+                }
 
-            ForEach(sortedGroups, id: \.self) { priorityChar in
-                Section {
-                    let itemsInGroup = grouped[priorityChar]!.sorted { $0.element < $1.element }
-                    ForEach(itemsInGroup, id: \.offset) { index, item in
-                        TodoRowView(
-                            item: item,
-                            onToggle: { viewModel.toggleCompleted(at: index) }
-                        ).opacity(item.completed ? 0.25 : 1.0)
+                ForEach(sortedGroups, id: \.self) { priorityChar in
+                    Section {
+                        let itemsInGroup = grouped[priorityChar]!.sorted { $0.element < $1.element }
+                        ForEach(itemsInGroup, id: \.offset) { index, item in
+                            TodoRowView(
+                                item: item,
+                                onToggle: { viewModel.toggleCompleted(at: index) }
+                            ).opacity(item.completed ? 0.25 : 1.0)
+                        }
+                    } header: {
+                        let label: String =
+                            (priorityChar == "-") ? "No Priority" : "Priority \(priorityChar)"
+                        Text(label)
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(color(for: priorityChar))
+                            .padding(.vertical, 4)
+
                     }
-                } header: {
-                    let label: String =
-                        (priorityChar == "-") ? "No Priority" : "Priority \(priorityChar)"
-                    Text(label)
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(color(for: priorityChar))
-                        .padding(.vertical, 4)
+                }
 
+                // New item input
+                HStack {
+                    Image(systemName: "circle")
+                        .foregroundColor(.secondary)
+                    TextField("New task…", text: $newItemText)
+                        .textFieldStyle(.plain)
+                        .focused($focusNewItem)
+                        .onSubmit { addNewItem() }
+                }
+                .id("newItemRow")
+                .padding(.vertical, 4)
+            }
+            .listStyle(.plain)
+            .searchable(text: $searchText, placement: .toolbar)
+            .onReceive(NotificationCenter.default.publisher(for: .focusNewItem)) { _ in
+                focusNewItem = true
+                DispatchQueue.main.async {
+                    withAnimation {
+                        proxy.scrollTo("newItemRow", anchor: .bottom)
+                    }
                 }
             }
         }
-        .listStyle(.plain)
-        .searchable(text: $searchText, placement: .toolbar)
+    }
+
+    private func addNewItem() {
+        let text = newItemText.trimmingCharacters(in: .whitespaces)
+        guard !text.isEmpty else { return }
+        newItemText = ""
+        viewModel.addItem(from: text)
     }
 }
