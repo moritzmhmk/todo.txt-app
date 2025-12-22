@@ -66,6 +66,7 @@ struct TodoRowView: View {
         HStack {
             Button(action: onToggle) {
                 Image(systemName: item.completed ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(color(for: item.priority))
             }
             .buttonStyle(.plain)
 
@@ -110,4 +111,13 @@ private func keyValueView(key: String, value: String) -> some View {
     .font(.system(size: 12))
     .foregroundColor(.secondary)
     .clipShape(RoundedRectangle(cornerRadius: 4))
+}
+
+public func color(for priority: Character?) -> Color {
+    switch priority {
+    case "A": return Color.red
+    case "B": return Color.orange
+    case "C": return Color.yellow
+    default: return Color.primary
+    }
 }

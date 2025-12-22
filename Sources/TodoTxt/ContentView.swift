@@ -65,7 +65,7 @@ struct ContentView: View {
                         (priorityChar == "-") ? "No Priority" : "Priority \(priorityChar)"
                     Text(label)
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(color(for: priorityChar))
                         .padding(.vertical, 4)
 
                 }
