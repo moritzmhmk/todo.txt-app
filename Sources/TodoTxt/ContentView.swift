@@ -5,6 +5,8 @@ struct ContentView: View {
     @ObservedObject var appState: TodoAppState
     @ObservedObject var viewModel: TodoListViewModel
 
+    @State private var searchText = ""
+
     var body: some View {
         Group {
             if appState.todoFileURL != nil {
@@ -41,7 +43,10 @@ struct ContentView: View {
         List {
             // Group items by priority
             let indexed = Array(viewModel.items.enumerated())
-            let grouped = Dictionary(grouping: indexed) { _, item in
+            let filtered = indexed.filter { _, item in
+                searchText.isEmpty || item.description.localizedCaseInsensitiveContains(searchText)
+            }
+            let grouped = Dictionary(grouping: filtered) { _, item in
                 item.priority ?? "-"  // use "-" for no priority
             }
 
@@ -72,5 +77,6 @@ struct ContentView: View {
             }
         }
         .listStyle(.plain)
+        .searchable(text: $searchText, placement: .toolbar)
     }
 }
