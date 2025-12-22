@@ -30,6 +30,12 @@ final class TodoListViewModel: ObservableObject {
         save()
     }
 
+    func addItem(from line: String) {
+        let item = TodoParser.parse(line: line)
+        items.append(item)
+        save()
+    }
+
     private func save() {
         let text =
             items
