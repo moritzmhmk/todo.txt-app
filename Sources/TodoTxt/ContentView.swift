@@ -82,8 +82,8 @@ struct ContentView: View {
 
                 // New item input
                 HStack {
-                    Image(systemName: "circle")
-                        .foregroundColor(.secondary)
+                    Image(systemName: "plus.circle")
+                        .foregroundStyle(Color.primary.opacity(0.25))
                     TextField("New task…", text: $newItemText)
                         .textFieldStyle(.plain)
                         .focused($focusNewItem)
