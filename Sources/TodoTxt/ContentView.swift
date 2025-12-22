@@ -39,16 +39,38 @@ struct ContentView: View {
 
     private var todoList: some View {
         List {
+            // Group items by priority
             let indexed = Array(viewModel.items.enumerated())
-            let displayed = indexed.sorted { lhs, rhs in lhs.element < rhs.element }
-            ForEach(displayed, id: \.offset) { index, item in
-                TodoRowView(
-                    item: item,
-                    onToggle: {
-                        viewModel.toggleCompleted(at: index)
+            let grouped = Dictionary(grouping: indexed) { _, item in
+                item.priority ?? "-"  // use "-" for no priority
+            }
+
+            let sortedGroups = grouped.keys.sorted { lhs, rhs in
+                if lhs == "-" { return false }  // no priority goes last
+                if rhs == "-" { return true }
+                return lhs < rhs
+            }
+
+            ForEach(sortedGroups, id: \.self) { priorityChar in
+                Section {
+                    let itemsInGroup = grouped[priorityChar]!.sorted { $0.element < $1.element }
+                    ForEach(itemsInGroup, id: \.offset) { index, item in
+                        TodoRowView(
+                            item: item,
+                            onToggle: { viewModel.toggleCompleted(at: index) }
+                        ).opacity(item.completed ? 0.25 : 1.0)
                     }
-                )
+                } header: {
+                    let label: String =
+                        (priorityChar == "-") ? "No Priority" : "Priority \(priorityChar)"
+                    Text(label)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.secondary)
+                        .padding(.vertical, 4)
+
+                }
             }
         }
+        .listStyle(.plain)
     }
 }
