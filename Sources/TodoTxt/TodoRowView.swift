@@ -81,10 +81,10 @@ func tokensView(_ tokens: [DisplayToken]) -> some View {
         ForEach(tokens, id: \.description) { token in
             switch token {
             case .context(let s):
-                Text("+\(s)").font(.system(size: 12, weight: .light)).foregroundColor(.secondary)
+                Text("@\(s)").font(.system(size: 12, weight: .light)).foregroundColor(.secondary)
 
             case .project(let s):
-                Text("@\(s)").font(.system(size: 12, weight: .light)).foregroundColor(.secondary)
+                Text("+\(s)").font(.system(size: 12, weight: .light)).foregroundColor(.secondary)
 
             case .keyValue(let key, let value):
                 keyValueView(key: key, value: value)
