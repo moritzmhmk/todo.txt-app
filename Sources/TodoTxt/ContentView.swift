@@ -1,4 +1,5 @@
 import SwiftUI
+import TodoParser
 
 struct ContentView: View {
 
@@ -8,6 +9,28 @@ struct ContentView: View {
     @State private var searchText = ""
     @State private var newItemText = ""
     @FocusState var focusNewItem: Bool
+
+    private var indexedItems: [(offset: Int, element: TodoItem)] {
+        Array(viewModel.items.enumerated())
+    }
+    private var filteredItems: [(offset: Int, element: TodoItem)] {
+        indexedItems.filter { _, item in
+            searchText.isEmpty
+                || item.description.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+    private var groupedItems: [Character: [(offset: Int, element: TodoItem)]] {
+        Dictionary(grouping: filteredItems) { _, item in
+            item.priority ?? "-"
+        }
+    }
+    private var sortedPriorities: [Character] {
+        groupedItems.keys.sorted { lhs, rhs in
+            if lhs == "-" { return false }
+            if rhs == "-" { return true }
+            return lhs < rhs
+        }
+    }
 
     var body: some View {
         Group {
@@ -44,53 +67,16 @@ struct ContentView: View {
     private var todoList: some View {
         ScrollViewReader { proxy in
             List {
-                // Group items by priority
-                let indexed = Array(viewModel.items.enumerated())
-                let filtered = indexed.filter { _, item in
-                    searchText.isEmpty
-                        || item.description.localizedCaseInsensitiveContains(searchText)
-                }
-                let grouped = Dictionary(grouping: filtered) { _, item in
-                    item.priority ?? "-"  // use "-" for no priority
-                }
-
-                let sortedGroups = grouped.keys.sorted { lhs, rhs in
-                    if lhs == "-" { return false }  // no priority goes last
-                    if rhs == "-" { return true }
-                    return lhs < rhs
+                ForEach(sortedPriorities, id: \.self) { priority in
+                    TodoPrioritySection(
+                        priority: priority,
+                        items: groupedItems[priority] ?? [],
+                        onToggle: viewModel.toggleCompleted,
+                        onDelete: viewModel.removeItem
+                    )
                 }
 
-                ForEach(sortedGroups, id: \.self) { priorityChar in
-                    Section {
-                        let itemsInGroup = grouped[priorityChar]!.sorted { $0.element < $1.element }
-                        ForEach(itemsInGroup, id: \.offset) { index, item in
-                            TodoRowView(
-                                item: item,
-                                onToggle: { viewModel.toggleCompleted(at: index) }
-                            ).opacity(item.completed ? 0.25 : 1.0)
-                        }
-                    } header: {
-                        let label: String =
-                            (priorityChar == "-") ? "No Priority" : "Priority \(priorityChar)"
-                        Text(label)
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(color(for: priorityChar))
-                            .padding(.vertical, 4)
-
-                    }
-                }
-
-                // New item input
-                HStack {
-                    Image(systemName: "plus.circle")
-                        .foregroundStyle(Color.primary.opacity(0.25))
-                    TextField("New task…", text: $newItemText)
-                        .textFieldStyle(.plain)
-                        .focused($focusNewItem)
-                        .onSubmit { addNewItem() }
-                }
-                .id("newItemRow")
-                .padding(.vertical, 4)
+                newItemRow
             }
             .listStyle(.plain)
             .searchable(text: $searchText, placement: .toolbar)
@@ -105,10 +91,55 @@ struct ContentView: View {
         }
     }
 
+    private var newItemRow: some View {
+        HStack {
+            Image(systemName: "plus.circle")
+                .foregroundStyle(Color.primary.opacity(0.25))
+
+            TextField("New task…", text: $newItemText)
+                .textFieldStyle(.plain)
+                .focused($focusNewItem)
+                .onSubmit { addNewItem() }
+        }
+        .id("newItemRow")
+        .padding(.vertical, 4)
+    }
+
     private func addNewItem() {
         let text = newItemText.trimmingCharacters(in: .whitespaces)
         guard !text.isEmpty else { return }
         newItemText = ""
         viewModel.addItem(from: text)
+    }
+}
+
+struct TodoPrioritySection: View {
+    let priority: Character
+    let items: [(offset: Int, element: TodoItem)]
+    let onToggle: (Int) -> Void
+    let onDelete: (Int) -> Void
+
+    var body: some View {
+        Section {
+            ForEach(sortedItems, id: \.offset) { index, item in
+                TodoRowView(
+                    item: item,
+                    onToggle: { onToggle(index) }
+                ).opacity(item.completed ? 0.25 : 1.0)
+            }
+        } header: {
+            Text(headerLabel)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(color(for: priority))
+                .padding(.vertical, 4)
+        }
+    }
+
+    private var sortedItems: [(offset: Int, element: TodoItem)] {
+        items.sorted { $0.element < $1.element }
+    }
+
+    private var headerLabel: String {
+        priority == "-" ? "No Priority" : "Priority \(priority)"
     }
 }
