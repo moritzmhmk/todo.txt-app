@@ -36,6 +36,12 @@ final class TodoListViewModel: ObservableObject {
         save()
     }
 
+    func updateItem(at index: Int, from line: String) {
+        let item = TodoParser.parse(line: line)
+        items[index] = item
+        save()
+    }
+
     func removeItem(at index: Int) {
         items.remove(at: index)
         save()

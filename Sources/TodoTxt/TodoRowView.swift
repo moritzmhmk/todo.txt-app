@@ -60,17 +60,40 @@ enum DisplayToken: CustomStringConvertible {
 struct TodoRowView: View {
 
     let item: TodoItem
+    var isEditing: Bool
+    let cancelEditing: () -> Void
     let onToggle: () -> Void
+    let onUpdate: (String) -> Void
+
+    @State private var localEditingText: String = ""
+    @FocusState private var focused: Bool
 
     var body: some View {
         HStack {
-            Button(action: onToggle) {
-                Image(systemName: item.completed ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(color(for: item.priority))
-            }
-            .buttonStyle(.plain)
+            if isEditing {
+                TextField("", text: $localEditingText)
+                    .focused($focused)
+                    .onAppear {
+                        localEditingText = item.description
+                        focused = true
+                    }
+                    .onSubmit {
+                        onUpdate(localEditingText)
+                    }
+                    .onChange(of: focused) { _, newFocusValue in
+                        if newFocusValue == false {
+                            cancelEditing()
+                        }
+                    }
+            } else {
+                Button(action: onToggle) {
+                    Image(systemName: item.completed ? "checkmark.circle.fill" : "circle")
+                        .foregroundStyle(color(for: item.priority))
+                }
+                .buttonStyle(.plain)
 
-            tokensView(DisplayToken.from(item.tokens))
+                tokensView(DisplayToken.from(item.tokens))
+            }
         }
         .padding(.vertical, 4)
     }

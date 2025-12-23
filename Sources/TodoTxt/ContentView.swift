@@ -11,6 +11,7 @@ struct ContentView: View {
     @FocusState var focusNewItem: Bool
 
     @Binding var selection: Set<Int>
+    @State private var editingRow: Int? = nil
 
     private var indexedItems: [(offset: Int, element: TodoItem)] {
         Array(viewModel.items.enumerated())
@@ -43,6 +44,10 @@ struct ContentView: View {
                         viewModel.removeItem(at: index)
                     }
                     selection.removeAll()
+                }.onCommand(#selector(NSResponder.insertNewline(_:))) {
+                    if let index = selection.first {
+                        editingRow = index
+                    }
                 }.onExitCommand {
                     selection.removeAll()
                 }
@@ -81,7 +86,13 @@ struct ContentView: View {
                     TodoPrioritySection(
                         priority: priority,
                         items: groupedItems[priority] ?? [],
+                        editingRow: editingRow,
+                        cancelEditing: { editingRow = nil },
                         onToggle: viewModel.toggleCompleted,
+                        onUpdate: { index, line in
+                            viewModel.updateItem(at: index, from: line)
+                            editingRow = nil
+                        },
                         onDelete: viewModel.removeItem
                     )
                 }
@@ -126,7 +137,10 @@ struct ContentView: View {
 struct TodoPrioritySection: View {
     let priority: Character
     let items: [(offset: Int, element: TodoItem)]
+    var editingRow: Int?
+    let cancelEditing: () -> Void
     let onToggle: (Int) -> Void
+    let onUpdate: (Int, String) -> Void
     let onDelete: (Int) -> Void
 
     var body: some View {
@@ -134,7 +148,10 @@ struct TodoPrioritySection: View {
             ForEach(sortedItems, id: \.offset) { index, item in
                 TodoRowView(
                     item: item,
-                    onToggle: { onToggle(index) }
+                    isEditing: editingRow == index,
+                    cancelEditing: cancelEditing,
+                    onToggle: { onToggle(index) },
+                    onUpdate: { line in onUpdate(index, line) }
                 )
                 .opacity(item.completed ? 0.25 : 1.0)
                 .id("\(index)-\(item.description)")
