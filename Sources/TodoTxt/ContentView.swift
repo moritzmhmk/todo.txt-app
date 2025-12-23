@@ -43,6 +43,8 @@ struct ContentView: View {
                         viewModel.removeItem(at: index)
                     }
                     selection.removeAll()
+                }.onExitCommand {
+                    selection.removeAll()
                 }
             } else {
                 firstLaunchView
