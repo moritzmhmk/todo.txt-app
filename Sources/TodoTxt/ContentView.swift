@@ -10,7 +10,7 @@ struct ContentView: View {
     @State private var newItemText = ""
     @FocusState var focusNewItem: Bool
 
-    @State private var selection = Set<Int>()
+    @Binding var selection: Set<Int>
 
     private var indexedItems: [(offset: Int, element: TodoItem)] {
         Array(viewModel.items.enumerated())

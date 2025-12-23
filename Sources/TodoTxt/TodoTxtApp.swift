@@ -6,6 +6,7 @@ struct TodoTxtApp: App {
     @StateObject private var viewModel: TodoListViewModel
 
     @FocusState private var focusNewItem: Bool
+    @State private var selection = Set<Int>()
 
     init() {
         let state = TodoAppState()
@@ -20,7 +21,7 @@ struct TodoTxtApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(appState: appState, viewModel: viewModel)
+            ContentView(appState: appState, viewModel: viewModel, selection: $selection)
                 .onChange(of: appState.contents) { _, newValue in
                     viewModel.parse(contents: newValue)
                 }
@@ -40,6 +41,15 @@ struct TodoTxtApp: App {
                     NotificationCenter.default.post(name: .focusNewItem, object: nil)
                 }
                 .keyboardShortcut("n", modifiers: [.command])
+            }
+            CommandGroup(after: .textEditing) {
+                Button("Toggle Completed") {
+                    for index in selection {
+                        viewModel.toggleCompleted(at: index)
+                    }
+                }
+                .keyboardShortcut(.return, modifiers: [.command])
+                .disabled(selection.isEmpty)
             }
         }
     }
