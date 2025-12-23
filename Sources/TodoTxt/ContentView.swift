@@ -10,6 +10,8 @@ struct ContentView: View {
     @State private var newItemText = ""
     @FocusState var focusNewItem: Bool
 
+    @State private var selection = Set<Int>()
+
     private var indexedItems: [(offset: Int, element: TodoItem)] {
         Array(viewModel.items.enumerated())
     }
@@ -35,7 +37,13 @@ struct ContentView: View {
     var body: some View {
         Group {
             if appState.todoFileURL != nil {
-                todoList
+                todoList.onDeleteCommand {
+                    let indices = selection.sorted(by: >)
+                    for index in indices {
+                        viewModel.removeItem(at: index)
+                    }
+                    selection.removeAll()
+                }
             } else {
                 firstLaunchView
             }
@@ -66,7 +74,7 @@ struct ContentView: View {
 
     private var todoList: some View {
         ScrollViewReader { proxy in
-            List {
+            List(selection: $selection) {
                 ForEach(sortedPriorities, id: \.self) { priority in
                     TodoPrioritySection(
                         priority: priority,
@@ -125,7 +133,24 @@ struct TodoPrioritySection: View {
                 TodoRowView(
                     item: item,
                     onToggle: { onToggle(index) }
-                ).opacity(item.completed ? 0.25 : 1.0)
+                )
+                .opacity(item.completed ? 0.25 : 1.0)
+                .id("\(index)-\(item.description)")
+                .tag(index)
+                .contextMenu {
+                    Button(role: .destructive) {
+                        onDelete(index)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    Button(role: .destructive) {
+                        onDelete(index)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
             }
         } header: {
             Text(headerLabel)
