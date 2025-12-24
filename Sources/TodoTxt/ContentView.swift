@@ -109,6 +109,17 @@ struct ContentView: View {
                     }
                 }
             }
+            .onKeyPress { press in
+                switch press.key {
+                case .space:
+                    for selected in selection {
+                        viewModel.toggleCompleted(at: selected)
+                    }
+                default:
+                    return .ignored
+                }
+                return .handled
+            }
         }
     }
 

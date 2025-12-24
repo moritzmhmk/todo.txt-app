@@ -42,15 +42,6 @@ struct TodoTxtApp: App {
                 }
                 .keyboardShortcut("n", modifiers: [.command])
             }
-            CommandGroup(after: .textEditing) {
-                Button("Toggle Completed") {
-                    for index in selection {
-                        viewModel.toggleCompleted(at: index)
-                    }
-                }
-                .keyboardShortcut(.return, modifiers: [.command])
-                .disabled(selection.isEmpty)
-            }
         }
     }
 }
