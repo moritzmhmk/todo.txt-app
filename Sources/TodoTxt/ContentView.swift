@@ -122,6 +122,7 @@ struct ContentView: View {
                 }
             }
             .onKeyPress { press in
+                guard !focusNewItem else { return .ignored }
                 switch press.key {
                 case .space:
                     for selected in selection {
