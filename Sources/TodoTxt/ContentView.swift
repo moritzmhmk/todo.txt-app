@@ -103,6 +103,24 @@ struct ContentView: View {
                     }
                 }
             }
+            .contextMenu(forSelectionType: Int.self) { indices in
+                if !indices.isEmpty {
+                    Button("Edit") {
+                        if let index = indices.first {
+                            editingRow = index
+                        }
+                    }
+                    Button("Delete", role: .destructive) {
+                        for index in indices {
+                            viewModel.removeItem(at: index)
+                        }
+                    }
+                }
+            } primaryAction: { indices in
+                if let index = indices.first {
+                    editingRow = index
+                }
+            }
             .onKeyPress { press in
                 switch press.key {
                 case .space:
@@ -168,13 +186,6 @@ struct TodoPrioritySection: View {
                 .opacity(item.completed ? 0.25 : 1.0)
                 .id("\(index)-\(item.description)")
                 .tag(index)
-                .contextMenu {
-                    Button(role: .destructive) {
-                        onDelete(index)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-                }
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     Button(role: .destructive) {
                         onDelete(index)
