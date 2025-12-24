@@ -122,14 +122,13 @@ struct ContentView: View {
                 }
             }
             .onKeyPress { press in
-                guard !focusNewItem else { return .ignored }
+                if focusNewItem || editingRow != nil { return .ignored }
                 switch press.key {
                 case .space:
                     for selected in selection {
                         viewModel.toggleCompleted(at: selected)
                     }
                 case .return:
-                    guard editingRow == nil else { return .ignored }
                     if let index = selection.first {
                         editingRow = index
                     }
