@@ -44,12 +44,6 @@ struct ContentView: View {
                         viewModel.removeItem(at: index)
                     }
                     selection.removeAll()
-                }.onCommand(#selector(NSResponder.insertNewline(_:))) {
-                    if let index = selection.first {
-                        editingRow = index
-                    }
-                }.onExitCommand {
-                    selection.removeAll()
                 }
             } else {
                 firstLaunchView
@@ -115,6 +109,13 @@ struct ContentView: View {
                     for selected in selection {
                         viewModel.toggleCompleted(at: selected)
                     }
+                case .return:
+                    guard editingRow == nil else { return .ignored }
+                    if let index = selection.first {
+                        editingRow = index
+                    }
+                case .escape:
+                    selection.removeAll()
                 default:
                     return .ignored
                 }
