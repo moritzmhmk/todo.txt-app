@@ -26,12 +26,21 @@ final class TodoListViewModel: ObservableObject {
 
     func toggleCompleted(at index: Int) {
         guard items.indices.contains(index) else { return }
-        items[index].completed.toggle()
+        if items[index].completed {
+            items[index].completed = false
+            items[index].completionDate = nil
+        } else {
+            items[index].completed = true
+            items[index].completionDate = items[index].creationDate != nil ? Date.now : nil
+        }
         save()
     }
 
     func addItem(from line: String) {
-        let item = TodoParser.parse(line: line)
+        var item = TodoParser.parse(line: line)
+        if item.creationDate == nil {
+            item.creationDate = Date.now
+        }
         items.append(item)
         save()
     }
