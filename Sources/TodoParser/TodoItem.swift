@@ -20,11 +20,11 @@ public struct TodoItem {
 
         if let completionDate = completionDate {
             // TODO handle case of completionDate when creationDate is nil
-            parts.append(format(completionDate))
+            parts.append(TodoItem.format(completionDate))
         }
 
         if let creationDate = creationDate {
-            parts.append(format(creationDate))
+            parts.append(TodoItem.format(creationDate))
         }
 
         parts.append(contentsOf: tokens.map(\.description))
@@ -32,7 +32,7 @@ public struct TodoItem {
         return parts.joined(separator: " ")
     }
 
-    private func format(_ date: Date) -> String {
+    public static func format(_ date: Date) -> String {
         let f = DateFormatter()
         f.dateFormat = "yyyy-MM-dd"
         return f.string(from: date)

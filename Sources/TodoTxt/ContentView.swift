@@ -6,6 +6,8 @@ struct ContentView: View {
     @ObservedObject var appState: TodoAppState
     @ObservedObject var viewModel: TodoListViewModel
 
+    let showTaskDetails: Bool
+
     @State private var searchText = ""
     @State private var newItemText = ""
     @FocusState var focusNewItem: Bool
@@ -80,6 +82,7 @@ struct ContentView: View {
                     TodoPrioritySection(
                         priority: priority,
                         items: groupedItems[priority] ?? [],
+                        showDetails: showTaskDetails,
                         editingRow: editingRow,
                         cancelEditing: { editingRow = nil },
                         onToggle: viewModel.toggleCompleted,
@@ -167,6 +170,7 @@ struct ContentView: View {
 struct TodoPrioritySection: View {
     let priority: Character
     let items: [(offset: Int, element: TodoItem)]
+    let showDetails: Bool
     var editingRow: Int?
     let cancelEditing: () -> Void
     let onToggle: (Int) -> Void
@@ -178,6 +182,7 @@ struct TodoPrioritySection: View {
             ForEach(sortedItems, id: \.offset) { index, item in
                 TodoRowView(
                     item: item,
+                    showDetails: showDetails,
                     isEditing: editingRow == index,
                     cancelEditing: cancelEditing,
                     onToggle: { onToggle(index) },

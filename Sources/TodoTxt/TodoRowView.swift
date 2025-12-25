@@ -60,6 +60,7 @@ enum DisplayToken: CustomStringConvertible {
 struct TodoRowView: View {
 
     let item: TodoItem
+    let showDetails: Bool
     var isEditing: Bool
     let cancelEditing: () -> Void
     let onToggle: () -> Void
@@ -91,6 +92,21 @@ struct TodoRowView: View {
                         .foregroundStyle(color(for: item.priority))
                 }
                 .buttonStyle(.plain)
+
+                if showDetails {
+                    if let completionDate = item.completionDate {
+                        Text(TodoItem.format(completionDate)).font(
+                            .system(size: 10, weight: .ultraLight, design: .monospaced)
+                        )
+                        .foregroundColor(.primary)
+                    }
+                    if let creationDate = item.creationDate {
+                        Text(TodoItem.format(creationDate)).font(
+                            .system(size: 10, weight: .ultraLight, design: .monospaced)
+                        )
+                        .foregroundColor(.secondary)
+                    }
+                }
 
                 tokensView(DisplayToken.from(item.tokens))
             }

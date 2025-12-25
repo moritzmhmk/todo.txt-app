@@ -5,7 +5,7 @@ struct TodoTxtApp: App {
     @StateObject private var appState: TodoAppState
     @StateObject private var viewModel: TodoListViewModel
 
-    @FocusState private var focusNewItem: Bool
+    @AppStorage("showTaskDetails") private var showTaskDetails = false
     @State private var selection = Set<Int>()
 
     init() {
@@ -21,10 +21,13 @@ struct TodoTxtApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(appState: appState, viewModel: viewModel, selection: $selection)
-                .onChange(of: appState.contents) { _, newValue in
-                    viewModel.parse(contents: newValue)
-                }
+            ContentView(
+                appState: appState, viewModel: viewModel,
+                showTaskDetails: showTaskDetails, selection: $selection
+            )
+            .onChange(of: appState.contents) { _, newValue in
+                viewModel.parse(contents: newValue)
+            }
         }
         .commands {
             CommandGroup(replacing: .newItem) {
@@ -41,6 +44,8 @@ struct TodoTxtApp: App {
                     NotificationCenter.default.post(name: .focusNewItem, object: nil)
                 }
                 .keyboardShortcut("n", modifiers: [.command])
+                Toggle("Show Task Details", isOn: $showTaskDetails)
+                    .keyboardShortcut("i", modifiers: .command)
             }
         }
     }
