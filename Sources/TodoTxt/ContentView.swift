@@ -8,6 +8,7 @@ struct ContentView: View {
 
     let showTaskDetails: Bool
 
+    @State var focusSearch: Bool = false
     @State private var searchText = ""
     @State private var newItemText = ""
     @FocusState var focusNewItem: Bool
@@ -97,7 +98,10 @@ struct ContentView: View {
                 newItemRow
             }
             .listStyle(.plain)
-            .searchable(text: $searchText, placement: .toolbar)
+            .searchable(text: $searchText, isPresented: $focusSearch, placement: .toolbar)
+            .onReceive(NotificationCenter.default.publisher(for: .focusSearch)) { _ in
+                focusSearch = true
+            }
             .onReceive(NotificationCenter.default.publisher(for: .focusNewItem)) { _ in
                 focusNewItem = true
                 DispatchQueue.main.async {

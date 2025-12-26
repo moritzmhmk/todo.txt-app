@@ -44,6 +44,10 @@ struct TodoTxtApp: App {
                     NotificationCenter.default.post(name: .focusNewItem, object: nil)
                 }
                 .keyboardShortcut("n", modifiers: [.command])
+                Button("Find Task") {
+                    NotificationCenter.default.post(name: .focusSearch, object: nil)
+                }
+                .keyboardShortcut("f", modifiers: .command)
                 Toggle("Show Task Details", isOn: $showTaskDetails)
                     .keyboardShortcut("i", modifiers: .command)
             }
@@ -53,4 +57,5 @@ struct TodoTxtApp: App {
 
 extension NSNotification.Name {
     static let focusNewItem = NSNotification.Name("focusNewItem")
+    static let focusSearch = NSNotification.Name("focusSearch")
 }
