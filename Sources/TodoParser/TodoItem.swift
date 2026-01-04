@@ -74,3 +74,21 @@ extension TodoItem: Comparable {
             && lhs.tokens.map(\.description) == rhs.tokens.map(\.description)
     }
 }
+
+extension TodoItem {
+    public var projectNames: Set<String> {
+        Set(
+            tokens.compactMap {
+                if case .project(let name) = $0 { return name }
+                return nil
+            })
+    }
+
+    public var contextNames: Set<String> {
+        Set(
+            tokens.compactMap {
+                if case .context(let name) = $0 { return name }
+                return nil
+            })
+    }
+}
