@@ -6,7 +6,6 @@ struct TodoTxtApp: App {
     @StateObject private var viewModel: TodoListViewModel
 
     @AppStorage("showTaskDetails") private var showTaskDetails = false
-    @State private var selection = Set<Int>()
 
     init() {
         let state = TodoAppState()
@@ -23,7 +22,7 @@ struct TodoTxtApp: App {
         WindowGroup {
             ContentView(
                 appState: appState, viewModel: viewModel,
-                showTaskDetails: showTaskDetails, selection: $selection
+                showTaskDetails: showTaskDetails
             )
             .onChange(of: appState.contents) { _, newValue in
                 viewModel.parse(contents: newValue)
