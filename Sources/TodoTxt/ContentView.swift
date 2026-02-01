@@ -17,7 +17,8 @@ struct ContentView: View {
                     onToggle: viewModel.toggleCompleted,
                     onUpdate: viewModel.updateItem,
                     onDelete: viewModel.removeItem,
-                    onAdd: viewModel.addItem
+                    onAdd: viewModel.addItem,
+                    onArchive: viewModel.archiveCompleted
                 )
             } else {
                 FirstLaunchView(appState: appState)

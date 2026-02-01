@@ -3,15 +3,18 @@ import Foundation
 @MainActor
 final class TodoAppState: ObservableObject {
     @Published var todoFileURL: URL?
-    @Published var contents: String = ""
+    @Published var doneFileURL: URL?
 
-    private var watcher: TodoFileWatcher?
+    @Published var todoContents: String = ""
+    @Published var doneContents: String = ""
+
+    private var todoWatcher: TodoFileWatcher?
+    private var doneWatcher: TodoFileWatcher?
 
     init() {
         self.todoFileURL = TodoFileStore.load()
         if let url = todoFileURL {
-            loadContents(from: url)
-            startWatching(url)
+            setFile(url)
         }
     }
 
@@ -19,48 +22,77 @@ final class TodoAppState: ObservableObject {
 
     func chooseFile() {
         if let url = TodoFilePicker.pick() {
+            TodoFileStore.save(url)
             setFile(url)
         }
     }
 
     func createFile() {
         if let url = TodoFileCreator.create() {
+            TodoFileStore.save(url)
             setFile(url)
         }
     }
 
     private func setFile(_ url: URL) {
-        TodoFileStore.save(url)
         todoFileURL = url
-        loadContents(from: url)
-        startWatching(url)
+        loadTodoContents(from: url)
+        startWatchingTodo(url)
+
+        doneFileURL = url.deletingLastPathComponent().appendingPathComponent("done.txt")
+        if let url = doneFileURL {
+            loadDoneContents(from: url)
+            startWatchingDone(url)
+        }
     }
 
     // MARK: - File IO
 
-    private func loadContents(from url: URL) {
-        contents = (try? String(contentsOf: url)) ?? ""
+    private func loadTodoContents(from url: URL) {
+        todoContents = (try? String(contentsOf: url)) ?? ""
+    }
+
+    private func loadDoneContents(from url: URL) {
+        doneContents = (try? String(contentsOf: url)) ?? ""
     }
 
     // MARK: - Write
 
-    func save(contents newContents: String) {
+    func saveTodo(contents newContents: String) {
         guard let url = todoFileURL else { return }
 
         do {
             try newContents.write(to: url, atomically: true, encoding: .utf8)
-            contents = newContents
+            todoContents = newContents
         } catch {
             print("Failed to save todo.txt:", error)
         }
     }
 
+    func saveDone(contents newContents: String) {
+        guard let url = doneFileURL else { return }
+
+        do {
+            try newContents.write(to: url, atomically: true, encoding: .utf8)
+            doneContents = newContents
+        } catch {
+            print("Failed to save done.txt:", error)
+        }
+    }
+
     // MARK: - File watching
 
-    private func startWatching(_ url: URL) {
-        watcher?.stop()
-        watcher = TodoFileWatcher(url: url) { [weak self] in
-            self?.loadContents(from: url)
+    private func startWatchingTodo(_ url: URL) {
+        todoWatcher?.stop()
+        todoWatcher = TodoFileWatcher(url: url) { [weak self] in
+            self?.loadTodoContents(from: url)
+        }
+    }
+
+    private func startWatchingDone(_ url: URL) {
+        doneWatcher?.stop()
+        doneWatcher = TodoFileWatcher(url: url) { [weak self] in
+            self?.loadDoneContents(from: url)
         }
     }
 }

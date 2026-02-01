@@ -12,8 +12,10 @@ struct TodoTxtApp: App {
         _appState = StateObject(wrappedValue: state)
         _viewModel = StateObject(
             wrappedValue: TodoListViewModel(
-                initialContents: state.contents,
-                onSave: { state.save(contents: $0) }
+                initialContents: state.todoContents,
+                initialArchiveContents: state.doneContents,
+                onSave: { state.saveTodo(contents: $0) },
+                onSaveArchive: { state.saveDone(contents: $0) }
             )
         )
     }
@@ -24,8 +26,11 @@ struct TodoTxtApp: App {
                 appState: appState, viewModel: viewModel,
                 showTaskDetails: showTaskDetails
             )
-            .onChange(of: appState.contents) { _, newValue in
+            .onChange(of: appState.todoContents) { _, newValue in
                 viewModel.parse(contents: newValue)
+            }
+            .onChange(of: appState.doneContents) { _, newValue in
+                viewModel.parseArchive(contents: newValue)
             }
         }
         .commands {

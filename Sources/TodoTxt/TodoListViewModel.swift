@@ -5,19 +5,33 @@ import TodoParser
 final class TodoListViewModel: ObservableObject {
 
     @Published private(set) var items: [TodoItem] = []
+    @Published private(set) var archivedItems: [TodoItem] = []
 
     private let saveHandler: (String) -> Void
+    private let saveArchiveHandler: (String) -> Void
 
     init(
         initialContents: String,
-        onSave: @escaping (String) -> Void
+        initialArchiveContents: String,
+        onSave: @escaping (String) -> Void,
+        onSaveArchive: @escaping (String) -> Void
     ) {
         self.saveHandler = onSave
+        self.saveArchiveHandler = onSaveArchive
         parse(contents: initialContents)
+        parseArchive(contents: initialArchiveContents)
     }
 
     func parse(contents: String) {
         items =
+            contents
+            .split(whereSeparator: \.isNewline)
+            .map(String.init)
+            .map { TodoParser.parse(line: $0) }
+    }
+
+    func parseArchive(contents: String) {
+        archivedItems =
             contents
             .split(whereSeparator: \.isNewline)
             .map(String.init)
@@ -56,6 +70,17 @@ final class TodoListViewModel: ObservableObject {
         save()
     }
 
+    func archiveCompleted() {
+        let completed = items.filter { $0.completed }
+        guard !completed.isEmpty else { return }
+
+        archivedItems.append(contentsOf: completed)
+        items.removeAll { $0.completed }
+
+        saveArchive()
+        save()
+    }
+
     private func save() {
         let text =
             items
@@ -63,5 +88,14 @@ final class TodoListViewModel: ObservableObject {
             .joined(separator: "\n")
 
         saveHandler(text)
+    }
+
+    private func saveArchive() {
+        let text =
+            archivedItems
+            .map { $0.description }
+            .joined(separator: "\n")
+
+        saveArchiveHandler(text)
     }
 }

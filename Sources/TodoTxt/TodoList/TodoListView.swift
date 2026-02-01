@@ -10,6 +10,7 @@ struct TodoListView: View {
     let onUpdate: (Int, String) -> Void
     let onDelete: (Int) -> Void
     let onAdd: (String) -> Void
+    let onArchive: () -> Void
 
     @State private var selection = Set<Int>()
 
@@ -96,6 +97,14 @@ struct TodoListView: View {
             .listStyle(.plain)
             .searchable(text: $searchText, isPresented: $focusSearch, placement: .toolbar)
             .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        onArchive()
+                    } label: {
+                        Image(systemName: "archivebox")
+                    }
+                    .accessibilityLabel("Archive completed tasks.")
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         withAnimation(.snappy) {
